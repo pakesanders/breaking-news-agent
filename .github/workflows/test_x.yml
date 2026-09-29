@@ -26,9 +26,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Check X accounts
-  env:
-    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-  run: python x_monitor.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python x_monitor.py
 
       - name: Save seen posts
         run: |
@@ -37,3 +37,4 @@ jobs:
           git add seen_posts.json
           git diff --cached --quiet || git commit -m "Update seen posts"
           git push
+          
