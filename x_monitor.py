@@ -2,13 +2,31 @@ import requests
 import xml.etree.ElementTree as ET
 
 
-ACCOUNT = "TSNBobMcKenzie"
-FEED_URL = f"https://fxtwitter.com/{ACCOUNT}/feed.xml"
+MONITORED_ACCOUNTS = {
+    "NFL": [
+        "AdamSchefter",
+        "RapSheet",
+        "NFL"
+    ],
+    "NBA": [
+        "ShamsCharania",
+        "wojespn"
+    ],
+    "MLB": [
+        "JeffPassan",
+        "MLB"
+    ],
+    "NHL": [
+        "TSNBobMcKenzie"
+    ]
+}
 
 
-def get_latest_posts():
+def get_posts(account):
+    feed_url = f"https://fxtwitter.com/{account}/feed.xml"
+
     response = requests.get(
-        FEED_URL,
+        feed_url,
         timeout=15,
         headers={
             "User-Agent": "SportsNewsAI/1.0"
@@ -27,7 +45,7 @@ def get_latest_posts():
         pub_date = item.findtext("pubDate", default="")
 
         posts.append({
-            "account": ACCOUNT,
+            "account": account,
             "text": title,
             "url": link,
             "published": pub_date
@@ -37,22 +55,37 @@ def get_latest_posts():
 
 
 def main():
-    print(f"Checking @{ACCOUNT}...")
+    print("Sports News Monitor")
+    print("=" * 50)
 
-    posts = get_latest_posts()
+    total_posts = 0
 
-    if not posts:
-        print("No posts found.")
-        return
+    for sport, accounts in MONITORED_ACCOUNTS.items():
+        print(f"\n{sport}")
+        print("-" * 30)
 
-    print(f"Found {len(posts)} posts.")
+        for account in accounts:
+            print(f"\nChecking @{account}...")
 
-    for post in posts[:5]:
-        print("\n---")
-        print(f"Account: @{post['account']}")
-        print(f"Date: {post['published']}")
-        print(f"Post: {post['text']}")
-        print(f"URL: {post['url']}")
+            try:
+                posts = get_posts(account)
+
+                print(f"Found {len(posts)} posts.")
+
+                for post in posts[:3]:
+                    print("\n  ---")
+                    print(f"  Date: {post['published']}")
+                    print(f"  Post: {post['text']}")
+                    print(f"  URL: {post['url']}")
+
+                total_posts += len(posts)
+
+            except Exception as e:
+                print(f"ERROR checking @{account}: {e}")
+
+    print("\n" + "=" * 50)
+    print(f"Total posts found: {total_posts}")
+    print("Monitoring complete.")
 
 
 if __name__ == "__main__":
