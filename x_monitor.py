@@ -46,7 +46,7 @@ def save_seen_posts(seen_posts):
     with open(SEEN_FILE, "w", encoding="utf-8") as file:
         json.dump(
             {
-                "posts": list(seen_posts)
+                "posts": sorted(list(seen_posts))
             },
             file,
             indent=2
@@ -82,8 +82,12 @@ def get_posts(account):
                 continue
 
             actual_account = path_parts[0].lower()
+            post_id = path_parts[1]
 
             if actual_account != account.lower():
+                continue
+
+            if not post_id.isdigit():
                 continue
 
         except Exception:
@@ -93,7 +97,8 @@ def get_posts(account):
             "account": account,
             "text": title,
             "url": link,
-            "published": pub_date
+            "published": pub_date,
+            "id": post_id
         })
 
     return posts
@@ -107,10 +112,12 @@ def main():
     new_posts = []
 
     for sport, accounts in MONITORED_ACCOUNTS.items():
+
         print(f"\n{sport}")
         print("-" * 30)
 
         for account in accounts:
+
             print(f"\nChecking @{account}...")
 
             try:
@@ -119,32 +126,41 @@ def main():
                 print(f"Found {len(posts)} verified posts.")
 
                 for post in posts:
-                    post_id = post["url"]
+
+                    post_id = f"{account.lower()}:{post['id']}"
 
                     if post_id not in seen_posts:
                         new_posts.append(post)
 
             except Exception as e:
+
                 print(f"ERROR checking @{account}: {e}")
 
     print("\n" + "=" * 50)
     print(f"NEW POSTS FOUND: {len(new_posts)}")
 
     for post in new_posts:
+
         print("\n--- NEW POST ---")
         print(f"Account: @{post['account']}")
         print(f"Date: {post['published']}")
         print(f"Post: {post['text']}")
         print(f"URL: {post['url']}")
 
-    # Remember every post we have now seen
+    # Remember posts
     for sport, accounts in MONITORED_ACCOUNTS.items():
+
         for account in accounts:
+
             try:
+
                 posts = get_posts(account)
 
                 for post in posts:
-                    seen_posts.add(post["url"])
+
+                    post_id = f"{account.lower()}:{post['id']}"
+
+                    seen_posts.add(post_id)
 
             except Exception:
                 pass
