@@ -170,8 +170,16 @@ def main():
                     recent_posts += 1
 
                     # Only count genuinely unseen recent posts
-                    if post_id not in seen_posts:
-                        new_posts.append(post)
+                   if post_id not in seen_posts:
+    new_posts.append(post)
+
+    try:
+        ai_result = classify_post(post)
+
+        post["ai"] = ai_result
+
+    except Exception as e:
+        print(f"AI ERROR for @{post['account']}: {e}")
 
             except Exception as e:
 
