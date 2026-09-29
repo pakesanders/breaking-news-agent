@@ -166,13 +166,11 @@ def main():
 
                     post_id = f"{account.lower()}:{post['id']}"
 
-                    # Ignore old posts
                     if not is_recent(post["published"]):
                         continue
 
                     recent_posts += 1
 
-                    # Only process genuinely unseen recent posts
                     if post_id not in seen_posts:
 
                         new_posts.append(post)
@@ -220,34 +218,36 @@ def main():
             print(f"Summary: {post['ai'].get('summary')}")
             print(f"Reason: {post['ai'].get('reason')}")
 
-          if classification == "IMPORTANT":
-    print("\n🚨 SENDING TELEGRAM")
+            if classification == "IMPORTANT":
 
-    message = (
-        f"🚨 BREAKING SPORTS NEWS\n\n"
-        f"@{post['account']}\n"
-        f"{post['ai'].get('summary')}\n\n"
-        f"{post['url']}"
-    )
+                print("\n🚨 SENDING TELEGRAM")
 
-    send_telegram_message(message)
+                message = (
+                    f"🚨 BREAKING SPORTS NEWS\n\n"
+                    f"@{post['account']}\n"
+                    f"{post['ai'].get('summary')}\n\n"
+                    f"{post['url']}"
+                )
 
-elif classification == "PROBABLY IMPORTANT":
-    print("\n🔔 SENDING TELEGRAM")
+                send_telegram_message(message)
 
-    message = (
-        f"🔔 SPORTS NEWS\n\n"
-        f"@{post['account']}\n"
-        f"{post['ai'].get('summary')}\n\n"
-        f"{post['url']}"
-    )
+            elif classification == "PROBABLY IMPORTANT":
 
-    send_telegram_message(message)
+                print("\n🔔 SENDING TELEGRAM")
 
-else:
-    print("\n⏭️ WOULD IGNORE")
+                message = (
+                    f"🔔 SPORTS NEWS\n\n"
+                    f"@{post['account']}\n"
+                    f"{post['ai'].get('summary')}\n\n"
+                    f"{post['url']}"
+                )
 
-    # Remember every post currently found
+                send_telegram_message(message)
+
+            else:
+
+                print("\n⏭️ WOULD IGNORE")
+
     for sport, accounts in MONITORED_ACCOUNTS.items():
 
         for account in accounts:
