@@ -159,18 +159,26 @@ def main():
 
                 total_posts += len(posts)
 
-                for post in posts:
+               for post in posts:
 
-                    post_id = f"{account.lower()}:{post['id']}"
+    post_id = f"{account.lower()}:{post['id']}"
 
-                    # Ignore old posts
-                    if not is_recent(post["published"]):
-                        continue
+    # Ignore old posts
+    if not is_recent(post["published"]):
+        continue
 
-                    recent_posts += 1
+    recent_posts += 1
 
-                    # Only count genuinely unseen recent posts
-                   if post_id not in seen_posts:
+    # Only count genuinely unseen recent posts
+    if post_id not in seen_posts:
+        new_posts.append(post)
+
+        try:
+            ai_result = classify_post(post)
+            post["ai"] = ai_result
+
+        except Exception as e:
+            print(f"AI ERROR for @{post['account']}: {e}")
     new_posts.append(post)
 
     try:
