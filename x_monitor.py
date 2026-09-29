@@ -78,11 +78,13 @@ def get_posts(account):
         try:
             path_parts = urlparse(link).path.strip("/").split("/")
 
-            if len(path_parts) < 2:
+            # Expected format:
+            # /Account/status/123456789
+            if len(path_parts) < 3:
                 continue
 
             actual_account = path_parts[0].lower()
-            post_id = path_parts[1]
+            post_id = path_parts[2]
 
             if actual_account != account.lower():
                 continue
@@ -147,7 +149,7 @@ def main():
         print(f"Post: {post['text']}")
         print(f"URL: {post['url']}")
 
-    # Remember posts
+    # Remember all posts currently found
     for sport, accounts in MONITORED_ACCOUNTS.items():
 
         for account in accounts:
@@ -159,7 +161,6 @@ def main():
                 for post in posts:
 
                     post_id = f"{account.lower()}:{post['id']}"
-
                     seen_posts.add(post_id)
 
             except Exception:
