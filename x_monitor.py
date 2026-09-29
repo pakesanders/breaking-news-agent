@@ -86,8 +86,6 @@ def get_posts(account):
         try:
             path_parts = urlparse(link).path.strip("/").split("/")
 
-            # Expected:
-            # /Account/status/123456789
             if len(path_parts) < 3:
                 continue
 
@@ -211,28 +209,26 @@ def main():
 
         if "ai" in post:
 
-    classification = post["ai"].get("classification")
+            classification = post["ai"].get("classification")
 
-    print("\n--- GEMINI CLASSIFICATION ---")
+            print("\n--- GEMINI CLASSIFICATION ---")
 
-    print(f"Classification: {classification}")
-    print(f"Sport: {post['ai'].get('sport')}")
-    print(f"Category: {post['ai'].get('category')}")
-    print(f"Summary: {post['ai'].get('summary')}")
-    print(f"Reason: {post['ai'].get('reason')}")
+            print(f"Classification: {classification}")
+            print(f"Sport: {post['ai'].get('sport')}")
+            print(f"Category: {post['ai'].get('category')}")
+            print(f"Summary: {post['ai'].get('summary')}")
+            print(f"Reason: {post['ai'].get('reason')}")
 
-    if classification == "IMPORTANT":
-        print("\n🚨 WOULD SEND TELEGRAM")
+            if classification == "IMPORTANT":
+                print("\n🚨 WOULD SEND TELEGRAM")
 
-    elif classification == "PROBABLY IMPORTANT":
-        print("\n🔔 WOULD SEND TELEGRAM")
+            elif classification == "PROBABLY IMPORTANT":
+                print("\n🔔 WOULD SEND TELEGRAM")
 
-    else:
-        print("\n⏭️ WOULD IGNORE")
-    # Remember every post currently found.
-    # This prevents previously seen posts from being
-    # repeatedly processed if they appear again later.
+            else:
+                print("\n⏭️ WOULD IGNORE")
 
+    # Remember every post currently found
     for sport, accounts in MONITORED_ACCOUNTS.items():
 
         for account in accounts:
