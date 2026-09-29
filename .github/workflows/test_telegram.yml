@@ -1,0 +1,27 @@
+name: Test Telegram Bot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-telegram:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send Telegram test
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python -c "from telegram import send_telegram_message; send_telegram_message('🏆 Sports News AI is connected! Telegram notifications are working.')"
