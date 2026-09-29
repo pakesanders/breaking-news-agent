@@ -211,33 +211,24 @@ def main():
 
         if "ai" in post:
 
-            print("\n--- GEMINI CLASSIFICATION ---")
+    classification = post["ai"].get("classification")
 
-            print(
-                f"Classification: "
-                f"{post['ai'].get('classification')}"
-            )
+    print("\n--- GEMINI CLASSIFICATION ---")
 
-            print(
-                f"Sport: "
-                f"{post['ai'].get('sport')}"
-            )
+    print(f"Classification: {classification}")
+    print(f"Sport: {post['ai'].get('sport')}")
+    print(f"Category: {post['ai'].get('category')}")
+    print(f"Summary: {post['ai'].get('summary')}")
+    print(f"Reason: {post['ai'].get('reason')}")
 
-            print(
-                f"Category: "
-                f"{post['ai'].get('category')}"
-            )
+    if classification == "IMPORTANT":
+        print("\n🚨 WOULD SEND TELEGRAM")
 
-            print(
-                f"Summary: "
-                f"{post['ai'].get('summary')}"
-            )
+    elif classification == "PROBABLY IMPORTANT":
+        print("\n🔔 WOULD SEND TELEGRAM")
 
-            print(
-                f"Reason: "
-                f"{post['ai'].get('reason')}"
-            )
-
+    else:
+        print("\n⏭️ WOULD IGNORE")
     # Remember every post currently found.
     # This prevents previously seen posts from being
     # repeatedly processed if they appear again later.
