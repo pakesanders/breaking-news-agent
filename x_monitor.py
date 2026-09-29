@@ -1,5 +1,7 @@
 import requests
 import xml.etree.ElementTree as ET
+import json
+import os
 from urllib.parse import urlparse
 
 
@@ -21,6 +23,34 @@ MONITORED_ACCOUNTS = {
         "TSNBobMcKenzie"
     ]
 }
+
+
+SEEN_FILE = "seen_posts.json"
+
+
+def load_seen_posts():
+    if not os.path.exists(SEEN_FILE):
+        return set()
+
+    try:
+        with open(SEEN_FILE, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        return set(data.get("posts", []))
+
+    except Exception:
+        return set()
+
+
+def save_seen_posts(seen_posts):
+    with open(SEEN_FILE, "w", encoding="utf-8") as file:
+        json.dump(
+            {
+                "posts": list(seen_posts)
+            },
+            file,
+            indent=2
+        )
 
 
 def get_posts(account):
@@ -45,7 +75,6 @@ def get_posts(account):
         link = item.findtext("link", default="")
         pub_date = item.findtext("pubDate", default="")
 
-        # Make sure the X URL actually belongs to the account
         try:
             path_parts = urlparse(link).path.strip("/").split("/")
 
@@ -74,7 +103,8 @@ def main():
     print("Sports News Monitor")
     print("=" * 50)
 
-    total_posts = 0
+    seen_posts = load_seen_posts()
+    new_posts = []
 
     for sport, accounts in MONITORED_ACCOUNTS.items():
         print(f"\n{sport}")
@@ -88,20 +118,41 @@ def main():
 
                 print(f"Found {len(posts)} verified posts.")
 
-                for post in posts[:3]:
-                    print("\n  ---")
-                    print(f"  Account: @{post['account']}")
-                    print(f"  Date: {post['published']}")
-                    print(f"  Post: {post['text']}")
-                    print(f"  URL: {post['url']}")
+                for post in posts:
+                    post_id = post["url"]
 
-                total_posts += len(posts)
+                    if post_id not in seen_posts:
+                        new_posts.append(post)
 
             except Exception as e:
                 print(f"ERROR checking @{account}: {e}")
 
     print("\n" + "=" * 50)
-    print(f"Total verified posts found: {total_posts}")
+    print(f"NEW POSTS FOUND: {len(new_posts)}")
+
+    for post in new_posts:
+        print("\n--- NEW POST ---")
+        print(f"Account: @{post['account']}")
+        print(f"Date: {post['published']}")
+        print(f"Post: {post['text']}")
+        print(f"URL: {post['url']}")
+
+    # Remember every post we have now seen
+    for sport, accounts in MONITORED_ACCOUNTS.items():
+        for account in accounts:
+            try:
+                posts = get_posts(account)
+
+                for post in posts:
+                    seen_posts.add(post["url"])
+
+            except Exception:
+                pass
+
+    save_seen_posts(seen_posts)
+
+    print("\n" + "=" * 50)
+    print(f"Remembering {len(seen_posts)} posts.")
     print("Monitoring complete.")
 
 
