@@ -5,6 +5,7 @@ import os
 from urllib.parse import urlparse
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone, timedelta
+
 from ai_classifier import classify_post
 
 
@@ -124,7 +125,10 @@ def is_recent(pub_date):
 
         age = now - post_time
 
-        return age <= timedelta(minutes=RECENT_MINUTES) and age >= timedelta(minutes=-5)
+        return (
+            age <= timedelta(minutes=RECENT_MINUTES)
+            and age >= timedelta(minutes=-5)
+        )
 
     except Exception:
         return False
@@ -159,40 +163,36 @@ def main():
 
                 total_posts += len(posts)
 
-               for post in posts:
+                for post in posts:
 
-    post_id = f"{account.lower()}:{post['id']}"
+                    post_id = f"{account.lower()}:{post['id']}"
 
-    # Ignore old posts
-    if not is_recent(post["published"]):
-        continue
+                    # Ignore old posts
+                    if not is_recent(post["published"]):
+                        continue
 
-    recent_posts += 1
+                    recent_posts += 1
 
-    # Only count genuinely unseen recent posts
-    if post_id not in seen_posts:
-        new_posts.append(post)
+                    # Only process genuinely unseen recent posts
+                    if post_id not in seen_posts:
 
-        try:
-            ai_result = classify_post(post)
-            post["ai"] = ai_result
+                        new_posts.append(post)
 
-        except Exception as e:
-            print(f"AI ERROR for @{post['account']}: {e}")
-    new_posts.append(post)
+                        try:
 
-    try:
-        ai_result = classify_post(post)
+                            ai_result = classify_post(post)
 
-        post["ai"] = ai_result
+                            post["ai"] = ai_result
 
-    except Exception as e:
-        print(f"AI ERROR for @{post['account']}: {e}")
+                        except Exception as e:
+
+                            print(
+                                f"AI ERROR for @{post['account']}: {e}"
+                            )
 
             except Exception as e:
 
                 print(f"ERROR checking @{account}: {e}")
-
 
     print("\n" + "=" * 50)
 
@@ -200,28 +200,45 @@ def main():
     print(f"RECENT POSTS: {recent_posts}")
     print(f"NEW RECENT POSTS: {len(new_posts)}")
 
+    for post in new_posts:
 
-  for post in new_posts:
+        print("\n--- NEW POST ---")
 
-    print("\n--- NEW POST ---")
+        print(f"Account: @{post['account']}")
+        print(f"Date: {post['published']}")
+        print(f"Post: {post['text']}")
+        print(f"URL: {post['url']}")
 
-    print(f"Account: @{post['account']}")
-    print(f"Date: {post['published']}")
-    print(f"Post: {post['text']}")
-    print(f"URL: {post['url']}")
+        if "ai" in post:
 
-    if "ai" in post:
+            print("\n--- GEMINI CLASSIFICATION ---")
 
-        print("\n--- GEMINI CLASSIFICATION ---")
+            print(
+                f"Classification: "
+                f"{post['ai'].get('classification')}"
+            )
 
-        print(f"Classification: {post['ai'].get('classification')}")
-        print(f"Sport: {post['ai'].get('sport')}")
-        print(f"Category: {post['ai'].get('category')}")
-        print(f"Summary: {post['ai'].get('summary')}")
-        print(f"Reason: {post['ai'].get('reason')}")
+            print(
+                f"Sport: "
+                f"{post['ai'].get('sport')}"
+            )
 
+            print(
+                f"Category: "
+                f"{post['ai'].get('category')}"
+            )
 
-    # Remember every post we saw.
+            print(
+                f"Summary: "
+                f"{post['ai'].get('summary')}"
+            )
+
+            print(
+                f"Reason: "
+                f"{post['ai'].get('reason')}"
+            )
+
+    # Remember every post currently found.
     # This prevents previously seen posts from being
     # repeatedly processed if they appear again later.
 
@@ -242,9 +259,7 @@ def main():
             except Exception:
                 pass
 
-
     save_seen_posts(seen_posts)
-
 
     print("\n" + "=" * 50)
 
