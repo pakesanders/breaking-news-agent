@@ -29,8 +29,8 @@ MONITORED_ACCOUNTS = {
 
 SEEN_FILE = "seen_posts.json"
 
-# Only consider posts from the last 60 minutes
-RECENT_MINUTES = 60
+# Only consider posts from the last 5 minutes
+RECENT_MINUTES = 5
 
 
 def load_seen_posts():
