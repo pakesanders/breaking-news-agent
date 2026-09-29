@@ -3,6 +3,9 @@ name: Test X Monitor
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: "*/5 * * * *"
+
 permissions:
   contents: write
 
