@@ -220,14 +220,32 @@ def main():
             print(f"Summary: {post['ai'].get('summary')}")
             print(f"Reason: {post['ai'].get('reason')}")
 
-            if classification == "IMPORTANT":
-                print("\n🚨 WOULD SEND TELEGRAM")
+          if classification == "IMPORTANT":
+    print("\n🚨 SENDING TELEGRAM")
 
-            elif classification == "PROBABLY IMPORTANT":
-                print("\n🔔 WOULD SEND TELEGRAM")
+    message = (
+        f"🚨 BREAKING SPORTS NEWS\n\n"
+        f"@{post['account']}\n"
+        f"{post['ai'].get('summary')}\n\n"
+        f"{post['url']}"
+    )
 
-            else:
-                print("\n⏭️ WOULD IGNORE")
+    send_telegram_message(message)
+
+elif classification == "PROBABLY IMPORTANT":
+    print("\n🔔 SENDING TELEGRAM")
+
+    message = (
+        f"🔔 SPORTS NEWS\n\n"
+        f"@{post['account']}\n"
+        f"{post['ai'].get('summary')}\n\n"
+        f"{post['url']}"
+    )
+
+    send_telegram_message(message)
+
+else:
+    print("\n⏭️ WOULD IGNORE")
 
     # Remember every post currently found
     for sport, accounts in MONITORED_ACCOUNTS.items():
