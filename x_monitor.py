@@ -193,14 +193,24 @@ def main():
     print(f"NEW RECENT POSTS: {len(new_posts)}")
 
 
-    for post in new_posts:
+  for post in new_posts:
 
-        print("\n--- NEW POST ---")
+    print("\n--- NEW POST ---")
 
-        print(f"Account: @{post['account']}")
-        print(f"Date: {post['published']}")
-        print(f"Post: {post['text']}")
-        print(f"URL: {post['url']}")
+    print(f"Account: @{post['account']}")
+    print(f"Date: {post['published']}")
+    print(f"Post: {post['text']}")
+    print(f"URL: {post['url']}")
+
+    if "ai" in post:
+
+        print("\n--- GEMINI CLASSIFICATION ---")
+
+        print(f"Classification: {post['ai'].get('classification')}")
+        print(f"Sport: {post['ai'].get('sport')}")
+        print(f"Category: {post['ai'].get('category')}")
+        print(f"Summary: {post['ai'].get('summary')}")
+        print(f"Reason: {post['ai'].get('reason')}")
 
 
     # Remember every post we saw.
