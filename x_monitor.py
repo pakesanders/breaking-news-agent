@@ -7,6 +7,7 @@ from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone, timedelta
 
 from ai_classifier import classify_post
+from telegram import send_telegram_message
 
 
 MONITORED_ACCOUNTS = {
