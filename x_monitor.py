@@ -136,7 +136,6 @@ def is_recent(pub_date):
 def main():
 
     print("Sports News Monitor")
-    send_telegram_message("🏆 Sports News AI test — Telegram connection is working!")
     print("=" * 50)
 
     seen_posts = load_seen_posts()
