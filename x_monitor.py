@@ -1,5 +1,6 @@
 import requests
 import xml.etree.ElementTree as ET
+from urllib.parse import urlparse
 
 
 MONITORED_ACCOUNTS = {
@@ -44,6 +45,21 @@ def get_posts(account):
         link = item.findtext("link", default="")
         pub_date = item.findtext("pubDate", default="")
 
+        # Make sure the X URL actually belongs to the account
+        try:
+            path_parts = urlparse(link).path.strip("/").split("/")
+
+            if len(path_parts) < 2:
+                continue
+
+            actual_account = path_parts[0].lower()
+
+            if actual_account != account.lower():
+                continue
+
+        except Exception:
+            continue
+
         posts.append({
             "account": account,
             "text": title,
@@ -70,10 +86,11 @@ def main():
             try:
                 posts = get_posts(account)
 
-                print(f"Found {len(posts)} posts.")
+                print(f"Found {len(posts)} verified posts.")
 
                 for post in posts[:3]:
                     print("\n  ---")
+                    print(f"  Account: @{post['account']}")
                     print(f"  Date: {post['published']}")
                     print(f"  Post: {post['text']}")
                     print(f"  URL: {post['url']}")
@@ -84,7 +101,7 @@ def main():
                 print(f"ERROR checking @{account}: {e}")
 
     print("\n" + "=" * 50)
-    print(f"Total posts found: {total_posts}")
+    print(f"Total verified posts found: {total_posts}")
     print("Monitoring complete.")
 
 
