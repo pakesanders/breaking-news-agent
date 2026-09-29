@@ -3,6 +3,8 @@ import xml.etree.ElementTree as ET
 import json
 import os
 from urllib.parse import urlparse
+from email.utils import parsedate_to_datetime
+from datetime import datetime, timezone, timedelta
 
 
 MONITORED_ACCOUNTS = {
@@ -26,6 +28,9 @@ MONITORED_ACCOUNTS = {
 
 
 SEEN_FILE = "seen_posts.json"
+
+# Only consider posts from the last 60 minutes
+RECENT_MINUTES = 60
 
 
 def load_seen_posts():
@@ -71,6 +76,7 @@ def get_posts(account):
     posts = []
 
     for item in root.findall(".//item"):
+
         title = item.findtext("title", default="")
         link = item.findtext("link", default="")
         pub_date = item.findtext("pubDate", default="")
@@ -78,7 +84,7 @@ def get_posts(account):
         try:
             path_parts = urlparse(link).path.strip("/").split("/")
 
-            # Expected format:
+            # Expected:
             # /Account/status/123456789
             if len(path_parts) < 3:
                 continue
@@ -106,12 +112,34 @@ def get_posts(account):
     return posts
 
 
+def is_recent(pub_date):
+    try:
+        post_time = parsedate_to_datetime(pub_date)
+
+        if post_time.tzinfo is None:
+            post_time = post_time.replace(tzinfo=timezone.utc)
+
+        now = datetime.now(timezone.utc)
+
+        age = now - post_time
+
+        return age <= timedelta(minutes=RECENT_MINUTES) and age >= timedelta(minutes=-5)
+
+    except Exception:
+        return False
+
+
 def main():
+
     print("Sports News Monitor")
     print("=" * 50)
 
     seen_posts = load_seen_posts()
+
     new_posts = []
+
+    total_posts = 0
+    recent_posts = 0
 
     for sport, accounts in MONITORED_ACCOUNTS.items():
 
@@ -123,14 +151,24 @@ def main():
             print(f"\nChecking @{account}...")
 
             try:
+
                 posts = get_posts(account)
 
                 print(f"Found {len(posts)} verified posts.")
+
+                total_posts += len(posts)
 
                 for post in posts:
 
                     post_id = f"{account.lower()}:{post['id']}"
 
+                    # Ignore old posts
+                    if not is_recent(post["published"]):
+                        continue
+
+                    recent_posts += 1
+
+                    # Only count genuinely unseen recent posts
                     if post_id not in seen_posts:
                         new_posts.append(post)
 
@@ -138,18 +176,28 @@ def main():
 
                 print(f"ERROR checking @{account}: {e}")
 
+
     print("\n" + "=" * 50)
-    print(f"NEW POSTS FOUND: {len(new_posts)}")
+
+    print(f"TOTAL POSTS FOUND: {total_posts}")
+    print(f"RECENT POSTS: {recent_posts}")
+    print(f"NEW RECENT POSTS: {len(new_posts)}")
+
 
     for post in new_posts:
 
         print("\n--- NEW POST ---")
+
         print(f"Account: @{post['account']}")
         print(f"Date: {post['published']}")
         print(f"Post: {post['text']}")
         print(f"URL: {post['url']}")
 
-    # Remember all posts currently found
+
+    # Remember every post we saw.
+    # This prevents previously seen posts from being
+    # repeatedly processed if they appear again later.
+
     for sport, accounts in MONITORED_ACCOUNTS.items():
 
         for account in accounts:
@@ -161,15 +209,20 @@ def main():
                 for post in posts:
 
                     post_id = f"{account.lower()}:{post['id']}"
+
                     seen_posts.add(post_id)
 
             except Exception:
                 pass
 
+
     save_seen_posts(seen_posts)
 
+
     print("\n" + "=" * 50)
-    print(f"Remembering {len(seen_posts)} posts.")
+
+    print(f"REMEMBERING {len(seen_posts)} POSTS")
+
     print("Monitoring complete.")
 
 
