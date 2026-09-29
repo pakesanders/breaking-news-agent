@@ -1,0 +1,26 @@
+name: Test Gemini AI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-gemini:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Test Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python -c "from ai_classifier import classify_post; print(classify_post({'account': 'AdamSchefter', 'text': 'BREAKING: The Dallas Cowboys have traded their starting quarterback to the Los Angeles Rams for a first-round draft pick.', 'url': 'https://x.com/AdamSchefter/status/test'}))"
