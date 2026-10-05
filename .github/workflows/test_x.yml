@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: x-monitor
+  cancel-in-progress: false
+
 jobs:
   test-x:
     runs-on: ubuntu-latest
